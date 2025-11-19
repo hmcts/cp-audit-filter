@@ -51,10 +51,12 @@ class AuditIntegrationTest {
     @Container
     static final GenericContainer<?> artemis =
             new GenericContainer<>("apache/activemq-artemis")
-                    .withEnv("ACTIVEMQ_ENABLED_AUTH", "false")
-                    .withEnv("ANONYMOUS_LOGIN", "true")
                     .withExposedPorts(AMQ_PORT)
-                    .waitingFor(Wait.forLogMessage(".*Artemis Console available.*\\n", 1));
+                    .waitingFor(Wait.forListeningPort().withStartupTimeout(java.time.Duration.ofSeconds(30)));
+
+    static {
+        artemis.start();
+    }
 
     @DynamicPropertySource
     static void setArtemisBrokerUrl(DynamicPropertyRegistry registry) {
@@ -90,6 +92,6 @@ class AuditIntegrationTest {
 
     @SneakyThrows
     private void sleep_to_let_queue_flush() {
-        Thread.sleep(2000);
+        Thread.sleep(500);
     }
 }

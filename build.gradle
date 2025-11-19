@@ -61,7 +61,7 @@ ext {
   springBootVersion = "3.5.7"
   lombokVersion = "1.18.42"
   jacksonVersion = "2.20.1"
-  jupiterVersion = "6.0.0"
+  jupiterVersion = "6.0.1"
 }
 
 dependencies {
@@ -87,12 +87,12 @@ dependencies {
   api "io.swagger.parser.v3:swagger-parser:2.1.35"
 
   // Mapper
-  implementation "org.mapstruct:mapstruct:1.5.5.Final"
-  annotationProcessor "org.mapstruct:mapstruct-processor:1.5.5.Final"
+  implementation "org.mapstruct:mapstruct:1.6.3"
+  annotationProcessor "org.mapstruct:mapstruct-processor:1.6.3"
 
   // Testcontainers
-  testImplementation 'org.testcontainers:testcontainers:1.19.7'
-  testImplementation 'org.testcontainers:junit-jupiter:1.19.7'
+  testImplementation 'org.testcontainers:testcontainers:2.0.2'
+  testImplementation 'org.testcontainers:junit-jupiter:2.0.2'
 }
 
 jar {

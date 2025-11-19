@@ -5,7 +5,6 @@ import com.jayway.jsonpath.JsonPath;
 import jakarta.annotation.Resource;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -13,9 +12,15 @@ import org.mockito.Captor;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.wait.strategy.Wait;
+import org.testcontainers.junit.jupiter.Container;
 import uk.gov.hmcts.cp.audit.integration.testclasses.DummyService;
+import uk.gov.hmcts.cp.audit.mapper.AuditPayloadMapper;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.times;
@@ -29,17 +34,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @ExtendWith(MockitoExtension.class)
 @Slf4j
-@Disabled // need to work out how to fire up artemis
-/**
- * To enable this integration test to work properly in-app we need an activeMq listener up and running
- * This could be either
- * a) Some kind of dummy listener, not necessarily  amq
- * b) An amq or artemis listener
- * c) A docker container started by TestContainer
- * d) A docker container started by spring boot docker-compose
- * e) A docker container started externally like some kind of pre script
- */
 class AuditIntegrationTest {
+    private static final int AMQ_PORT = 61616;
 
     @Resource
     private MockMvc mockMvc;
@@ -48,12 +44,31 @@ class AuditIntegrationTest {
     ArgumentCaptor<String> stringCaptor;
     @MockitoBean
     DummyService dummyService;
+    @MockitoBean
+    AuditPayloadMapper mockAuditPayloadMapper;
+
+    @Container
+    static final GenericContainer<?> artemis =
+            new GenericContainer<>("apache/activemq-artemis")
+                    .withExposedPorts(AMQ_PORT)
+                    .waitingFor(Wait.forListeningPort().withStartupTimeout(java.time.Duration.ofSeconds(30)));
+
+    static {
+        artemis.start();
+    }
+
+    @DynamicPropertySource
+    static void setArtemisBrokerUrl(DynamicPropertyRegistry registry) {
+        String brokerUrl = "tcp://" + artemis.getHost() + ":" + artemis.getMappedPort(AMQ_PORT);
+        log.info("Setting artemis brokerUrl to {}", brokerUrl);
+        registry.add("spring.artemis.broker-url", () -> brokerUrl);
+    }
 
     @Test
     void root_endpoint_should_be_audited() throws Exception {
         mockMvc
                 .perform(
-                        post("/case/id1234/details")
+                        post("/case/1234/details")
                                 .header("test-header", "some-value")
                                 .content("json body"))
                 .andDo(print())

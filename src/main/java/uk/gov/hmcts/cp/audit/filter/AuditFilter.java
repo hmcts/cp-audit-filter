@@ -55,8 +55,8 @@ public class AuditFilter extends OncePerRequestFilter {
 
         // Lets just demonstrate that we can get the required information ... in int tests
         // But not switch till we are happy
-        newAuditRequestPayload(request, getRequestBody(wrappedRequest));
-        newAuditResponsePayload(request, response, getResponseBody(wrappedResponse));
+         newAuditRequestPayload(request, getRequestBody(wrappedRequest));
+         newAuditResponsePayload(request, response, getResponseBody(wrappedResponse));
 
         wrappedResponse.copyBodyToResponse();
     }

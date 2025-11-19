@@ -13,6 +13,8 @@ import org.mockito.Captor;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.testcontainers.containers.GenericContainer;
@@ -52,14 +54,20 @@ class AuditIntegrationTest {
                     .withEnv("ACTIVEMQ_ENABLED_AUTH", "false")
                     .withEnv("ANONYMOUS_LOGIN", "true")
                     .withExposedPorts(AMQ_PORT)
-                    .waitingFor(Wait.forListeningPort().withStartupTimeout(java.time.Duration.ofSeconds(60)));
+                    .waitingFor(Wait.forLogMessage(".*Artemis Console available.*\\n", 1));
 
+    @DynamicPropertySource
+    static void setArtemisBrokerUrl(DynamicPropertyRegistry registry) {
+        String brokerUrl = "tcp://" + artemis.getHost() + ":" + artemis.getMappedPort(AMQ_PORT);
+        log.info("Setting artemis brokerUrl to {}", brokerUrl);
+        registry.add("spring.artemis.broker-url", () -> brokerUrl);
+    }
 
     @Test
     void root_endpoint_should_be_audited() throws Exception {
         mockMvc
                 .perform(
-                        post("/case/id1234/details")
+                        post("/case/1234/details")
                                 .header("test-header", "some-value")
                                 .content("json body"))
                 .andDo(print())
@@ -82,6 +90,6 @@ class AuditIntegrationTest {
 
     @SneakyThrows
     private void sleep_to_let_queue_flush() {
-        Thread.sleep(500);
+        Thread.sleep(2000);
     }
 }

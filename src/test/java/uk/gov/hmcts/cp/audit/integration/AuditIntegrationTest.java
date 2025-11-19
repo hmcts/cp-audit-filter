@@ -15,7 +15,11 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.wait.strategy.Wait;
+import org.testcontainers.junit.jupiter.Container;
 import uk.gov.hmcts.cp.audit.integration.testclasses.DummyService;
+import uk.gov.hmcts.cp.audit.mapper.AuditPayloadMapper;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.times;
@@ -29,17 +33,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @ExtendWith(MockitoExtension.class)
 @Slf4j
-@Disabled // need to work out how to fire up artemis
-/**
- * To enable this integration test to work properly in-app we need an activeMq listener up and running
- * This could be either
- * a) Some kind of dummy listener, not necessarily  amq
- * b) An amq or artemis listener
- * c) A docker container started by TestContainer
- * d) A docker container started by spring boot docker-compose
- * e) A docker container started externally like some kind of pre script
- */
 class AuditIntegrationTest {
+    private static final int AMQ_PORT = 61616;
 
     @Resource
     private MockMvc mockMvc;
@@ -48,6 +43,17 @@ class AuditIntegrationTest {
     ArgumentCaptor<String> stringCaptor;
     @MockitoBean
     DummyService dummyService;
+    @MockitoBean
+    AuditPayloadMapper mockAuditPayloadMapper;
+
+    @Container
+    static final GenericContainer<?> artemis =
+            new GenericContainer<>("apache/activemq-artemis")
+                    .withEnv("ACTIVEMQ_ENABLED_AUTH", "false")
+                    .withEnv("ANONYMOUS_LOGIN", "true")
+                    .withExposedPorts(AMQ_PORT)
+                    .waitingFor(Wait.forListeningPort().withStartupTimeout(java.time.Duration.ofSeconds(60)));
+
 
     @Test
     void root_endpoint_should_be_audited() throws Exception {

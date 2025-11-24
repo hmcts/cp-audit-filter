@@ -58,7 +58,7 @@ tasks.withType(Test).configureEach {
 }
 
 ext {
-  springBootVersion = "3.5.7"
+  springBootVersion = "4.0.0"
   lombokVersion = "1.18.42"
   jacksonVersion = "2.20.1"
   jupiterVersion = "6.0.1"
@@ -84,15 +84,15 @@ dependencies {
   implementation "org.springframework.boot:spring-boot-starter-artemis:$springBootVersion"
   implementation "com.fasterxml.jackson.core:jackson-databind:$jacksonVersion"
   implementation "com.fasterxml.jackson.datatype:jackson-datatype-jdk8:$jacksonVersion"
-  implementation "io.swagger.parser.v3:swagger-parser:2.1.35"
+  implementation "io.swagger.parser.v3:swagger-parser:2.1.36"
 
   // Mapper
   implementation "org.mapstruct:mapstruct:1.6.3"
   annotationProcessor "org.mapstruct:mapstruct-processor:1.6.3"
 
   // Testcontainers
-  testImplementation 'org.testcontainers:testcontainers:1.19.7'
-  testImplementation 'org.testcontainers:junit-jupiter:1.19.7'
+  testImplementation 'org.testcontainers:testcontainers:2.0.2'
+  testImplementation 'org.testcontainers:junit-jupiter:2.0.2'
 }
 
 jar {

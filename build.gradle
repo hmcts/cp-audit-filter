@@ -84,7 +84,7 @@ dependencies {
   implementation "org.springframework.boot:spring-boot-starter-artemis:$springBootVersion"
   implementation "com.fasterxml.jackson.core:jackson-databind:$jacksonVersion"
   implementation "com.fasterxml.jackson.datatype:jackson-datatype-jdk8:$jacksonVersion"
-  implementation "io.swagger.parser.v3:swagger-parser:2.1.35"
+  implementation "io.swagger.parser.v3:swagger-parser:2.1.41"
 
   // Mapper
   implementation "org.mapstruct:mapstruct:1.6.3"
